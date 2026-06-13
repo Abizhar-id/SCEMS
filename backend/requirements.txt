@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+paho-mqtt
+mysql-connector-python
+python-dotenv
+boto3
+
