@@ -31,11 +31,16 @@ ESP32-CAM (Detection): Bertindak sebagai sensor visual. Tugasnya adalah mendetek
 PZEM-004T (Measurement): Ini adalah sensor daya. Tugasnya membaca konsumsi listrik secara fisik, menghasilkan metrik seperti Tegangan (Volt), Daya (Watt), dan Arus (Ampere).
 B. Pusat Pemrosesan Lokal (Edge Computing)
 NodeMCU ESP8266 (Data Processing): Berperan sebagai "otak" utama di lokasi (microcontroller/gateway). Ia bertugas mengumpulkan data dari ESP32-CAM dan sensor PZEM.
-Logika Keputusan (Threshold \ge 5): Ini adalah contoh penerapan edge computing. NodeMCU tidak perlu melempar data ke cloud hanya untuk memutuskan apakah saklar harus menyala. Ia mengevaluasi aturan secara lokal:
+Logika Keputusan (Threshold > 5): Ini adalah contoh penerapan edge computing. NodeMCU tidak perlu melempar data ke cloud hanya untuk memutuskan apakah saklar harus menyala. Ia mengevaluasi aturan secara lokal:
 Jika jumlah siswa kurang dari 5 (No), sistem looping kembali melakukan deteksi melalui kamera.
 Jika jumlah siswa 5 atau lebih (Yes), ia langsung mengirimkan perintah ke aktuator.
 C. Perangkat Output (Aktuator)
 Relay 5V 4 Channel On/Off: Berfungsi sebagai saklar mekanis otomatis. Saat menerima sinyal "Yes" dari NodeMCU, relay akan aktif dan mengalirkan listrik ke beban (misalnya menyalakan lampu, AC, atau perangkat lab di ruangan tersebut).
 D. Komunikasi & Integrasi Dashboard
-Payload JSON \uparrow: Setelah listrik mengalir dan sensor PZEM membaca konsumsi dayanya, NodeMCU mengemas data Volt, Watt, Ampere tersebut ke dalam format JSON yang ringan, lalu mengirimkannya ke Database & Monitoring Dashboard untuk disimpan dan divisualisasikan.
-Two-way Communication & Remote Control \downarrow: Sistem ini tidak hanya berjalan satu arah. Terdapat Web Server Manual Input, yang memungkinkan operator melakukan Remote Control. Artinya, administrator bisa mengesampingkan sistem otomatis (misalnya, mematikan listrik secara manual untuk maintenance dari dashboard meskipun di ruangan tersebut ada \ge 5 siswa).
+Payload JSON : Setelah listrik mengalir dan sensor PZEM membaca konsumsi dayanya, NodeMCU mengemas data Volt, Watt, Ampere tersebut ke dalam format JSON yang ringan, lalu mengirimkannya ke Database & Monitoring Dashboard untuk disimpan dan divisualisasikan.
+Two-way Communication & Remote Control : Sistem ini tidak hanya berjalan satu arah. Terdapat Web Server Manual Input, yang memungkinkan operator melakukan Remote Control. Artinya, administrator bisa mengesampingkan sistem otomatis (misalnya, mematikan listrik secara manual untuk maintenance dari dashboard meskipun di ruangan tersebut ada diatas 5 siswa).
+**ROLE MEMBER**
+Abizhar  :
+Alika    :
+Arfa     :
+Musa     :
