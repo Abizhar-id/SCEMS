@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SCEMS — Smart Classroom Energy Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo-wrap">
+    <div class="logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">SCEMS</div>
+      <div class="logo-sub">Smart Classroom Energy Management</div>
+    </div>
+  </div>
+  <div class="top-right">
+    <div class="search-box">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Cari ruangan..." oninput="filterRooms(this.value)"/>
+    </div>
+    <div class="ws-indicator" id="wsIndicator">
+      <div class="ws-dot off" id="wsDot"></div>
+      <span id="wsStatus">Offline</span>
+    </div>
+    <span id="clock" class="clock">--:--:--</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- Page title -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Monitoring Ruangan</h1>
+      <p class="page-sub">Lihat status energi, jumlah orang, dan kontrol perangkat tiap ruangan.</p>
+    </div>
+    <div class="summary-pills">
+      <div class="summary-pill orange">
+        <div class="pill-val"><span id="totalWatt">—</span><span class="pill-unit">W</span></div>
+        <span class="pill-lbl">Total Daya</span>
+      </div>
+      <div class="summary-pill green">
+        <div class="pill-val"><span id="occRooms">—</span><span class="pill-unit">/ 2</span></div>
+        <span class="pill-lbl">Ruangan Terisi</span>
+      </div>
+      <div class="summary-pill purple">
+        <div class="pill-val"><span id="totalPersons">—</span><span class="pill-unit">org</span></div>
+        <span class="pill-lbl">Total Orang</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Room Cards -->
+  <div class="rooms-grid" id="roomsGrid"></div>
+
+  <!-- Charts Row -->
+  <div class="section-title">Grafik Real-time</div>
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-ttl">Konsumsi Energi</div>
+        <div class="chart-tabs">
+          <button class="tab-btn active" onclick="switchEnergy('watt',this)">Watt</button>
+          <button class="tab-btn" onclick="switchEnergy('volt',this)">Volt</button>
+          <button class="tab-btn" onclick="switchEnergy('ampere',this)">Ampere</button>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#3b82f6"></span>Ruang 101</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#8b5cf6"></span>Ruang 102</span>
+      </div>
+      <div style="position:relative;width:100%;height:180px">
+        <canvas id="energyChart" role="img" aria-label="Grafik energi real-time"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <div class="chart-ttl">Jumlah Orang</div>
+        <div class="chart-sub">≥ 5 orang = listrik akan disalurkan</div>
+      </div>
+      <div class="chart-legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#3b82f6"></span>Ruang 101</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#8b5cf6"></span>Ruang 102</span>
+        <span class="leg-item"><span class="leg-dot" style="background:transparent;border:1.5px dashed #ef4444"></span>Batas (5)</span>
+      </div>
+      <div style="position:relative;width:100%;height:180px">
+        <canvas id="personChart" role="img" aria-label="Grafik jumlah orang real-time"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Relay Log -->
+  <div class="section-title">Riwayat Perubahan Relay</div>
+  <div class="log-grid" id="logGrid"></div>
+
+</div><!-- end wrap -->
+
+<div id="toast"></div>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>
+
