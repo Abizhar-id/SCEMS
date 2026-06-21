@@ -11,7 +11,7 @@
 
 // Select camera model
 //#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-#define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 
 #if defined(CAMERA_MODEL_ESP_EYE)
 #define PWDN_GPIO_NUM    -1
