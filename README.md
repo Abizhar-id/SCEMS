@@ -1,39 +1,74 @@
-# IoT ProyeK
-<img width="814" height="263" alt="data flow iot" src="https://github.com/user-attachments/assets/1e90e8f5-fd8f-4720-8ed7-e9d823183dfb" />
-1. Diagram 1: Arsitektur Aliran Data di Cloud (Pemisahan Beban Kerja)
+# Panduan Instalasi & Penggunaan Proyek IoT Smart Classroom
 
-Diagram ini menjelaskan perjalanan data setelah dikirim oleh perangkat IoT ke sistem awan (AWS). Kunci utamanya adalah pemisahan dua jalur data:
+Repositori ini memuat kode sumber (source code) dan konfigurasi untuk sistem manajemen daya kelas berbasis kehadiran fisik, dengan infrastruktur komputasi awan (AWS) dan pemrosesan edge (IoT).
 
-Jalur Cepat (Operasional): Data dialirkan ke server aplikasi (FastAPI) dan disimpan di database relasional (RDS). Tujuannya agar data bisa langsung ditampilkan secara real-time di Dashboard pengguna.
+## 📂 Struktur Repositori
 
-Jalur Lambat/Analitik (Big Data): Data mentah juga dikumpulkan secara massal ke penyimpanan besar (S3), lalu diproses oleh sistem analitik (EMR Hadoop & Athena). Tujuannya untuk melihat tren, riwayat jangka panjang, dan analisis mendalam menggunakan grafik Grafana.
+Sebelum memulai, pastikan Anda memahami struktur direktori pada repositori ini:
+* `backend/`: Berisi inti server menggunakan FastAPI, file database (`database.py`), klien MQTT (`mqtt_client.py`), dan daftar dependensi (`requirements.txt`).
+* `frontend/`: Antarmuka dashboard pengguna berbasis HTML, CSS, dan JS.
+* `mosquitto/`: Konfigurasi untuk broker MQTT (`mosquitto.conf`).
+* `nginx/`: Konfigurasi reverse proxy web server (`iot-project.conf`).
+* `Image_Detection_ESP32v2.ino`: Kode program untuk ESP32-CAM (Deteksi Objek/Kamera).
+* `SCEMSv6.ino`: Kode program untuk NodeMCU ESP8266 & Sensor PZEM-004T.
+
+---
+
+## 🛠️ Instruksi Penggunaan & Setup
+
+Ikuti tahapan di bawah ini secara berurutan untuk menjalankan sistem mulai dari perangkat keras hingga infrastruktur *cloud*.
+
+### Tahap 1: Setup Perangkat Keras (IoT Edge) & Mikrokontroler
+
+Tahap pertama adalah menanamkan logika otomatisasi pada perangkat fisik di lapangan.
+
+<img width="982" height="560" alt="flowchart iot" src="https://github.com/user-attachments/assets/685ac561-e2bb-4970-8c5d-b88f5205be3e" />
+*Gambar 1: Alur Otomatisasi Perangkat Keras (IoT Edge)*
+
+**Langkah-langkah:**
+1.  **ESP32-CAM (Kamera):** Buka file `Image_Detection_ESP32v2.ino` menggunakan Arduino IDE. Lakukan *flashing* ke modul ESP32-CAM. Modul ini akan bertugas mendeteksi dan menghitung jumlah siswa di ruangan.
+2.  **NodeMCU & Sensor Daya:** Buka file `SCEMSv6.ino` dan lakukan *flashing* ke NodeMCU ESP8266. Mikrokontroler ini akan membaca data dari ESP32-CAM. 
+3.  **Logika Relay:** Jika siswa berjumlah ≥ 5 orang, NodeMCU akan memicu modul Relay untuk menyalakan listrik. Data metrik kelistrikan (Volt/Watt/Ampere) kemudian dibaca oleh sensor PZEM-004T dan dikirimkan ke cloud (AWS IoT Core) melalui protokol MQTT.
+
+### Tahap 2: Konfigurasi Keamanan Jaringan Cloud (AWS VPC)
+
+Setelah perangkat keras siap, siapkan fondasi infrastruktur awan yang aman sebelum mengunggah aplikasi.
 
 <img width="1091" height="351" alt="aws cloud" src="https://github.com/user-attachments/assets/8af86e30-61c7-4720-9459-a557c32f0c5b" />
-2. Diagram 2: Keamanan Jaringan Server (VPC Subnetting)
+*Gambar 2: Keamanan Jaringan Server (VPC Subnetting)*
 
-Diagram ini fokus pada bagaimana AWS mengisolasi dan mengamankan infrastruktur dari ancaman luar internet.
+**Langkah-langkah di AWS Console:**
+1.  Buat **VPC (Virtual Private Cloud)** baru dengan topologi terisolasi.
+2.  Siapkan instance **EC2** di dalam **Public Subnet** agar server dapat diakses dari internet.
+3.  Siapkan database **RDS (MySQL)** di dalam **Private Subnet** agar data tetap aman dan tidak terekspos ke internet publik.
+4.  Konfigurasikan **VPC Endpoint** untuk menghubungkan EC2 dan RDS secara internal tanpa melalui jalur internet.
 
-Pemisahan Akses: Server utama (EC2) diletakkan di Public Subnet karena harus bisa diakses oleh pengguna dari internet. Namun, Database (RDS) menyimpan data sensitif, sehingga disembunyikan di Private Subnet yang tidak memiliki akses internet sama sekali.
+### Tahap 3: Setup Web Server (Nginx) & Server Aplikasi (FastAPI)
 
-Koneksi Internal: Agar Server (EC2) dan Database (RDS) bisa saling berkomunikasi, mereka menggunakan VPC Endpoint. Ini adalah terowongan internal AWS yang membuat transfer data menjadi sangat aman tanpa harus keluar ke jalur internet publik.
+Tahap ini mengatur bagaimana aplikasi melayani permintaan dari antarmuka pengguna (dashboard).
 
 <img width="1297" height="208" alt="data" src="https://github.com/user-attachments/assets/07db2731-9958-4761-9218-25ac1d828b43" />
-3. Diagram 3: Manajemen Lalu Lintas Aplikasi (Nginx & FastAPI)
+*Gambar 3: Manajemen Lalu Lintas Aplikasi (Nginx & FastAPI)*
 
-Diagram ini menyoroti apa yang terjadi di dalam server EC2 saat pengguna membuka aplikasi dashboard di perangkat mereka.
+**Langkah-langkah Konfigurasi di EC2:**
+1.  **Backend (FastAPI):** * Masuk ke direktori `backend/`.
+    * Instal dependensi Python: `pip install -r requirements.txt`.
+    * Jalankan server menggunakan Uvicorn di port 8000. API ini akan melayani REST request (Path A) dan WebSocket (Path B) untuk *real-time updates*.
+2.  **Konfigurasi Mosquitto:** Pindahkan file konfigurasi dari `mosquitto/mosquitto.conf` ke direktori sistem broker Anda untuk mengatur penerimaan MQTT dari perangkat IoT.
+3.  **Nginx (Reverse Proxy):**
+    * Salin file konfigurasi dari direktori `nginx/iot-project.conf` ke `/etc/nginx/sites-available/`.
+    * Aktifkan konfigurasi Nginx. Nginx akan langsung melayani *static files* (HTML/CSS/JS) yang berada di direktori `frontend/`, dan meneruskan *request* dinamis ke FastAPI.
 
-Nginx sebagai Penerima Tamu: Nginx melayani permintaan sederhana (seperti gambar, desain halaman, atau teks statis) secara langsung ke pengguna tanpa membebani aplikasi utama.
+### Tahap 4: Analitik Big Data & Skalabilitas
 
-FastAPI sebagai Mesin Utama: Untuk permintaan data dinamis (misalnya histori sensor), Nginx meneruskannya ke FastAPI. FastAPI kemudian menarik data dari Database (RDS). FastAPI juga membuka jalur Web Socket agar dashboard pengguna bisa terus diperbarui secara real-time tiap detiknya tanpa perlu menekan tombol refresh.
-<img width="982" height="560" alt="flowchart iot" src="https://github.com/user-attachments/assets/685ac561-e2bb-4970-8c5d-b88f5205be3e" />
-4. Diagram 4: Alur Otomatisasi Perangkat Keras (IoT Edge)
+Langkah terakhir ini memisahkan jalur data operasional (real-time) dengan data analitik jangka panjang.
 
-Diagram ini bergeser dari ranah cloud ke ranah fisik (perangkat keras di lapangan). Ini adalah sistem manajemen daya berbasis kehadiran fisik.
+<img width="814" height="263" alt="data flow iot" src="https://github.com/user-attachments/assets/1e90e8f5-fd8f-4720-8ed7-e9d823183dfb" />
+*Gambar 4: Arsitektur Aliran Data di Cloud (Pemisahan Beban Kerja)*
 
-Logika Otomatisasi: Kamera (ESP32-CAM) bertugas menghitung jumlah siswa di sebuah ruangan. Mikrokontroler (NodeMCU) kemudian memproses data tersebut: jika jumlah siswa 5 orang atau lebih, ia akan memerintahkan Relay untuk menyalakan aliran listrik ruangan.
-
-Siklus Pemantauan: Setelah listrik menyala, sensor daya (PZEM-004T) akan membaca berapa banyak listrik (Volt/Watt/Ampere) yang sedang digunakan. Data pemakaian listrik ini kemudian dikirim kembali ke server web dan dashboard agar bisa dipantau secara langsung oleh administrator. Administrator juga diberi hak akses kendali manual dari web server jika diperlukan.
-
+**Cara Kerja Alur Data:**
+* **Jalur Operasional (Real-time):** Data yang masuk melalui broker disimpan di database relasional (RDS MySQL) oleh FastAPI dan langsung ditampilkan di web klien via koneksi WebSocket.
+* **Jalur Analitik (Data Lake):** Data mentah sensor diteruskan menuju Amazon S3 secara massal. Lakukan konfigurasi pada **EMR Hadoop** dan **Amazon Athena** untuk memproses data berukuran besar (Big Data) yang tersimpan di S3, lalu hubungkan hasilnya ke platform visualisasi analitik seperti **Grafana** untuk melihat tren pemakaian listrik jangka panjang.
 **ROLE MEMBER**
 
 1. Abizhar-id zurrr — Cloud Infrastructure & Backend Developer
