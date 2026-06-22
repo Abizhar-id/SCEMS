@@ -22,7 +22,8 @@ Ikuti tahapan di bawah ini secara berurutan untuk menjalankan sistem mulai dari 
 
 Tahap pertama adalah menanamkan logika otomatisasi pada perangkat fisik di lapangan.
 
-<img width="982" height="560" alt="flowchart iot" src="https://github.com/user-attachments/assets/685ac561-e2bb-4970-8c5d-b88f5205be3e" />
+<img width="1144" height="602" alt="WhatsApp Image 2026-06-08 at 00 18 15" src="https://github.com/user-attachments/assets/8cb35089-11a5-4453-bc11-90b5c2cbbb2e" />
+
 *Gambar 1: Alur Otomatisasi Perangkat Keras (IoT Edge)*
 
 **Langkah-langkah:**
